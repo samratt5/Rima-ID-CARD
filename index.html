@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Umrah ID by Rima</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        #id-card-wrapper {
+            width: 100%;
+            max-width: 500px;
+            container-type: inline-size;
+        }
+
+        #id-card-render {
+            width: 100%;
+            aspect-ratio: 500 / 320;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        @container (max-width: 400px) {
+            #view-header { font-size: 4cqw; }
+            #view-name { font-size: 6cqw; }
+            .info-label { font-size: 2.2cqw; }
+            .info-value { font-size: 3cqw; }
+        }
+
+        .no-break {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #qr-hidden { 
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Form Section -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+            <div class="flex justify-between items-center mb-6 border-b pb-2">
+                <h2 class="text-xl font-bold text-emerald-900">RIMA ID CARD MAKER</h2>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">Year</label>
+                    <input type="number" id="p-year" value="2026" class="w-16 border border-gray-200 rounded p-1 text-center font-bold text-emerald-700 focus:ring-1 focus:ring-emerald-500 outline-none">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Full Name</label>
+                    <input type="text" id="p-name" placeholder="Enter Full Name" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nationality</label>
+                    <input type="text" id="p-nat" value="INDIAN" class="w-full border border-gray-200 rounded-lg p-3 bg-gray-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Passport No.</label>
+                    <input type="text" id="p-pass" placeholder="A0000000" class="w-full border border-gray-200 rounded-lg p-3">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Visa Number</label>
+                    <input type="text" id="p-visa" placeholder="7000000000" class="w-full border border-gray-200 rounded-lg p-3">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Contact</label>
+                    <input type="text" id="p-tel" value="+919073748263" class="w-full border border-gray-200 rounded-lg p-3">
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Upload Photo</label>
+                    <input type="file" id="p-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-emerald-50 file:text-emerald-700">
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-col gap-3">
+                <button id="btn-save" class="w-full bg-emerald-700 text-white font-black py-4 rounded-xl hover:bg-emerald-800 transition-colors shadow-lg uppercase tracking-widest">Save & Next ID</button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-dl" class="bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md">DOWNLOAD PNG</button>
+                    <button id="btn-reset" class="bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors">RESET ALL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ID Card Preview Section -->
+        <div class="flex flex-col items-center">
+            <div class="mb-4 text-emerald-800 font-bold text-sm bg-emerald-100 px-4 py-1 rounded-full uppercase tracking-widest">Official Preview</div>
+            
+            <div id="id-card-wrapper">
+                <div id="id-card-render">
+                    <div class="bg-emerald-900 h-[17.5%] w-full flex flex-col items-center justify-center">
+                        <div class="h-[7%] w-full bg-[#d4af37]"></div>
+                        <div id="view-header" class="text-white font-black text-lg tracking-widest uppercase mt-1">UMRAH ZIARAT 2026</div>
+                    </div>
+
+                    <div class="bg-gray-50 border-b border-gray-200 h-[10%] w-full flex items-center justify-between px-[4%]">
+                        <div id="view-id" class="text-[12px] font-mono font-black text-emerald-800 bg-white border border-emerald-200 px-2 py-0.5 rounded">26-000001</div>
+                        <div class="text-[10px] text-gray-400 font-black uppercase tracking-tighter">UMRAH ZIARAT ID CARD</div>
+                    </div>
+
+                    <div class="relative w-full h-[65.5%] p-[4%] flex gap-[5%]">
+                        <div class="w-[20%] flex flex-col items-center">
+                            <div class="w-full aspect-[100/125] border-2 border-emerald-900 bg-gray-50 overflow-hidden mb-[10%]">
+                                <img id="view-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="w-full h-full object-cover">
+                            </div>
+                            <div id="qrcode-preview" class="bg-white p-[5%] border border-gray-100 w-full aspect-square shadow-sm"></div>
+                        </div>
+
+                        <div class="flex-1 overflow-hidden">
+                            <div class="mb-[6%]">
+                                <div id="view-name" class="text-2xl font-black text-emerald-950 uppercase no-break">GUEST NAME</div>
+                                <div class="h-1 w-[20%] bg-[#d4af37] mt-1"></div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-y-[8%] gap-x-[4%]">
+                                <div>
+                                    <div class="info-label text-[9px] text-gray-400 font-black uppercase">Nationality</div>
+                                    <div id="view-nat" class="info-value text-sm font-bold text-gray-800 no-break">INDIAN</div>
+                                </div>
+                                <div>
+                                    <div class="info-label text-[9px] text-gray-400 font-black uppercase">Passport</div>
+                                    <div id="view-pass" class="info-value text-sm font-bold text-gray-800 no-break">---</div>
+                                </div>
+                                <div>
+                                    <div class="info-label text-[9px] text-gray-400 font-black uppercase">Visa Number</div>
+                                    <div id="view-visa" class="info-value text-sm font-bold text-emerald-700 no-break">---</div>
+                                </div>
+                                <div>
+                                    <div class="info-label text-[9px] text-gray-400 font-black uppercase">Contact</div>
+                                    <div id="view-tel" class="info-value text-sm font-bold text-gray-800 no-break">+919073748263</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-0 w-full h-[7%] bg-emerald-900 flex items-center justify-between px-[4%]">
+                        <span id="view-footer-year" class="text-white text-[9px] font-black tracking-widest uppercase">Umrah Identity Card 2026</span>
+                        <span id="view-valid-badge" class="bg-yellow-500 text-emerald-950 text-[9px] font-black px-2 py-0.5 rounded">2026 VALID</span>
+                    </div>
+                </div>
+            </div>
+            
+            <canvas id="export-canvas" width="1500" height="960" style="display:none;"></canvas>
+            <div id="qr-hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'umrah_batch_system_v2';
+        let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { lastId: 0 };
+
+        const el = (id) => document.getElementById(id);
+        const inputs = {
+            name: el('p-name'), nat: el('p-nat'), pass: el('p-pass'),
+            visa: el('p-visa'), tel: el('p-tel'), 
+            file: el('p-file'), year: el('p-year')
+        };
+        const view = {
+            name: el('view-name'), nat: el('view-nat'), pass: el('view-pass'),
+            visa: el('view-visa'), tel: el('view-tel'), 
+            img: el('view-img'), id: el('view-id'), header: el('view-header'),
+            footerYear: el('view-footer-year'), validBadge: el('view-valid-badge')
+        };
+
+        const qrc = new QRCode(el("qrcode-preview"), { width: 100, height: 100, correctLevel: QRCode.CorrectLevel.H });
+        const qrcHidden = new QRCode(el("qr-hidden"), { width: 256, height: 256, correctLevel: QRCode.CorrectLevel.H });
+
+        function updateUI() {
+            const yearVal = inputs.year.value || "2026";
+            const yearShort = yearVal.slice(-2);
+            const padded = String(state.lastId + 1).padStart(6, '0');
+            const idVal = `${yearShort}-${padded}`;
+
+            view.id.innerText = idVal;
+            view.header.innerText = `UMRAH ZIARAT ${yearVal}`;
+            view.footerYear.innerText = `Umrah Identity Card ${yearVal}`;
+            view.validBadge.innerText = `${yearVal} VALID`;
+            
+            view.name.innerText = inputs.name.value || "GUEST NAME";
+            view.nat.innerText = inputs.nat.value || "INDIAN";
+            view.pass.innerText = inputs.pass.value || "---";
+            view.visa.innerText = inputs.visa.value || "---";
+            view.tel.innerText = inputs.tel.value || "+919073748263";
+
+            const qrString = `ID:${idVal}|P:${inputs.pass.value}|V:${inputs.visa.value}`;
+            qrc.makeCode(qrString);
+            qrcHidden.makeCode(qrString);
+        }
+
+        Object.values(inputs).forEach(input => { if(input.type !== 'file') input.oninput = updateUI; });
+
+        inputs.file.onchange = (e) => {
+            const f = e.target.files[0];
+            if(f) {
+                const r = new FileReader();
+                r.onload = (ev) => { view.img.src = ev.target.result; updateUI(); };
+                r.readAsDataURL(f);
+            }
+        };
+
+        el('btn-save').onclick = () => {
+            if(!inputs.name.value) return alert("Enter Name");
+            state.lastId++;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            inputs.name.value = ''; inputs.pass.value = ''; inputs.visa.value = ''; inputs.file.value = '';
+            view.img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+            updateUI();
+            alert("Pilgrim Saved! ID sequence updated.");
+        };
+
+        el('btn-dl').onclick = async () => {
+            updateUI();
+            await new Promise(resolve => setTimeout(resolve, 150));
+
+            const canvas = el('export-canvas');
+            const ctx = canvas.getContext('2d');
+            const scale = 3; 
+            const w = 500 * scale;
+            const h = 320 * scale;
+            const yearVal = inputs.year.value || "2026";
+
+            ctx.clearRect(0,0,w,h);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = "#064e3b";
+            ctx.fillRect(0, 0, w, 56 * scale);
+            ctx.fillStyle = "#d4af37";
+            ctx.fillRect(0, 0, w, 4 * scale);
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `900 ${24 * scale}px Inter, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillText(`UMRAH ZIARAT ${yearVal}`, w / 2, 40 * scale);
+
+            ctx.fillStyle = "#f9fafb";
+            ctx.fillRect(0, 56 * scale, w, 32 * scale);
+            ctx.strokeStyle = "#e5e7eb";
+            ctx.strokeRect(0, 56 * scale, w, 32 * scale);
+
+            const idText = view.id.innerText;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(16 * scale, 62 * scale, 90 * scale, 20 * scale);
+            ctx.strokeStyle = "#065f46";
+            ctx.strokeRect(16 * scale, 62 * scale, 90 * scale, 20 * scale);
+            ctx.fillStyle = "#065f46";
+            ctx.font = `900 ${11 * scale}px monospace`;
+            ctx.textAlign = "left";
+            ctx.fillText(idText, 22 * scale, 77 * scale);
+
+            ctx.fillStyle = "#9ca3af";
+            ctx.font = `800 ${10 * scale}px Inter`;
+            ctx.textAlign = "right";
+            ctx.fillText("OFFICIAL PILGRIM IDENTITY PASS", w - 16 * scale, 77 * scale);
+
+            ctx.fillStyle = "#022c22";
+            ctx.font = `900 ${26 * scale}px Inter`;
+            ctx.textAlign = "left";
+            ctx.fillText((inputs.name.value || "GUEST NAME").toUpperCase(), 135 * scale, 125 * scale);
+            ctx.fillStyle = "#d4af37";
+            ctx.fillRect(135 * scale, 132 * scale, 80 * scale, 4 * scale);
+
+            const drawLabel = (label, value, x, y) => {
+                ctx.fillStyle = "#9ca3af";
+                ctx.font = `900 ${9 * scale}px Inter`;
+                ctx.textAlign = "left";
+                ctx.fillText(label.toUpperCase(), x, y);
+                ctx.fillStyle = "#1f2937";
+                ctx.font = `700 ${14 * scale}px Inter`;
+                ctx.fillText(value || "---", x, y + 18 * scale);
+            };
+
+            drawLabel("Nationality", inputs.nat.value, 135 * scale, 175 * scale);
+            drawLabel("Passport", inputs.pass.value, 310 * scale, 175 * scale);
+            ctx.fillStyle = "#065f46"; 
+            drawLabel("Visa Number", inputs.visa.value, 135 * scale, 230 * scale);
+            ctx.fillStyle = "#1f2937";
+            drawLabel("Contact", inputs.tel.value, 310 * scale, 230 * scale);
+
+            try {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = view.img.src;
+                await new Promise((res) => {
+                    img.onload = res;
+                    img.onerror = res;
+                });
+                ctx.strokeStyle = "#064e3b";
+                ctx.lineWidth = 2 * scale;
+                ctx.strokeRect(16 * scale, 100 * scale, 100 * scale, 125 * scale);
+                ctx.drawImage(img, 16 * scale, 100 * scale, 100 * scale, 125 * scale);
+            } catch(e) {}
+
+            const qrContainer = el('qr-hidden');
+            let qrSource = qrContainer.querySelector('img');
+            if(!qrSource || !qrSource.src || qrSource.src.length < 100) {
+                qrSource = qrContainer.querySelector('canvas');
+            }
+
+            if(qrSource) {
+                const qrSize = 52 * scale; 
+                const qrX = 16 * scale;
+                const qrY = 238 * scale;
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+                ctx.drawImage(qrSource, qrX, qrY, qrSize, qrSize);
+            }
+
+            const footerH = 25 * scale;
+            ctx.fillStyle = "#064e3b";
+            ctx.fillRect(0, h - footerH, w, footerH);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `900 ${9 * scale}px Inter`;
+            ctx.textAlign = "left";
+            ctx.fillText(`UMRAH IDENTITY CARD ${yearVal}`, 16 * scale, h - 8 * scale);
+
+            ctx.fillStyle = "#eab308";
+            ctx.fillRect(w - 100 * scale, h - 18 * scale, 84 * scale, 12 * scale);
+            ctx.fillStyle = "#064e3b";
+            ctx.font = `900 ${8 * scale}px Inter`;
+            ctx.textAlign = "center";
+            ctx.fillText(`${yearVal} VALID`, w - 58 * scale, h - 9 * scale);
+
+            try {
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
+                const link = document.createElement('a');
+                link.download = `UMRAH_ID_${idText}_${(inputs.name.value || 'UNNAMED').replace(/\s+/g, '_')}.png`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Export failed", err);
+            }
+        };
+
+        el('btn-reset').onclick = () => { if(confirm("This will clear all saved sequences. Continue?")) { localStorage.clear(); location.reload(); } };
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
+
